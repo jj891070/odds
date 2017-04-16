@@ -1,0 +1,43 @@
+<?php
+
+$json = [];
+
+foreach ($data as $key => $value) {
+    $this->refreshData($value, $json);
+}
+
+private function refreshData($data, &$json)
+{
+    # 抓讓球的資料
+    $letball = Odd::where('mid', $data['id'])->first();
+
+    # 資料庫沒有讓球資料
+    if ($letball === null) {
+        $odd = new Odd();
+        $odd->mid = $data['id'];
+        $odd->price = $data['price'];
+        $odd->save();
+
+        $json[] = [
+            'market' => $data['market'],
+            'price' => $odd->price,
+            'refresh' => true,
+        ];
+    } else {
+        if ($letball->price == $data['price']) {
+            $json[] = [
+                'market' => $data['market'],
+                'price' => $data['price'],
+                'refresh' => false,
+            ];
+        } else {
+            $letball->price = $data['price'];
+            $letball->save();
+            $json[] = [
+                'market' => $data['market'],
+                'price' => $data['price'],
+                'refresh' => true,
+            ];
+        }
+    }
+}
